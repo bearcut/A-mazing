@@ -28,6 +28,12 @@ typedef struct
 } maze;
 //Maze Object
 
+typedef struct {
+    int x;
+    int y;
+} Position;
+//Position Object
+
 maze* allocMaze(int height,int width); //Allocate Memory for maze
 void freeMaze(maze* maze); // free memory
 cell* getCell(maze* maze,int x,int y);// Get cell object from coordinated
