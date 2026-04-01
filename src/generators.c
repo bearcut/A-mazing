@@ -94,8 +94,7 @@ void generateMazeDFS(maze* m) {
     
     m->start.x = 1; m->start.y = 1; m->start.Type = startCell;
     m->goal.x = m->width - 2; m->goal.y = m->height - 2; m->goal.Type = goalCell;
-    
-    
+
     m->grid[getIndex(m, 1, 1)] = startCell;
     m->grid[getIndex(m, m->width - 2, m->height - 2)] = goalCell;
 }
