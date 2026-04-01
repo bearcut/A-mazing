@@ -4,4 +4,7 @@
 
 
 void printMazeConsole(maze* m);
+
+
+
 #endif
