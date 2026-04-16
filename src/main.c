@@ -6,7 +6,7 @@
 
 
 int main() {
-    // DFS works best with odd dimensions to ensure walls align properly
+    
     int width,height;
     scanf("%d %d",&width,&height);
 
@@ -16,9 +16,12 @@ int main() {
     printf("Generating DFS maze...\n");
     generateMazeDFS(myMaze);
 
+    printf("Solving maze with A*...\n");
+    solveAstar(myMaze);
+
     printf("Resulting Maze:\n");
     printMazeConsole(myMaze);
-
+   
     freeMaze(myMaze);
     return 0;
 }

@@ -1,5 +1,6 @@
 #ifndef MAZE_H
 #define MAZE_H
+#include<stdbool.h>
   
 
 typedef enum{
@@ -8,7 +9,7 @@ typedef enum{
     startCell = 2,
     goalCell = 3
 } cellType;
-//cellType Data Type
+
 
 typedef struct
 {
@@ -16,7 +17,7 @@ typedef struct
     int y;
     cellType Type;
 } cell;
-//cell position and type in a single object
+
 
 typedef struct
 {
@@ -29,14 +30,29 @@ typedef struct
 //Maze Object
 
 typedef struct {
+    int x, y;          //manhattan distance ke liye
+    int index;         // The 1D index in the maze->grid array
+    
+    float g_cost;      // start se cost
+    float h_cost;      // current node se end tak ki cost
+    float f_cost;      // f=g+h
+    
+    int parent_index;  // index of cell jaha se we came(-1 if none)
+    
+    bool is_open;      // Is this node currently in the Priority Queue?
+    bool is_closed;    // Have we already fully evaluated this node?
+    bool is_path;      // Is this node part of the final path?
+} AStarNode;
+
+typedef struct {
     int x;
     int y;
 } Position;
-//Position Object
 
-maze* allocMaze(int height,int width); //Allocate Memory for maze
-void freeMaze(maze* maze); // free memory
-cell* getCell(maze* maze,int x,int y);// Get cell object from coordinated
-cellType getType(cell* cell);// Get the cellType from cell
-void setCell(maze* maze,cell* cell,cellType);//set celltype
+
+maze* allocMaze(int height,int width); 
+void freeMaze(maze* maze); 
+cell* getCell(maze* maze,int x,int y);
+cellType getType(cell* cell);
+void setCell(maze* maze,cell* cell,cellType);
 #endif

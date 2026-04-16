@@ -3,7 +3,8 @@
 
 #include "maze.h"
 
-// Generates a maze using Depth-First Search (Recursive Backtracker)
-void generateMazeDFS(maze* m);
 
-#endif
+void generateMazeDFS(maze* m);
+void solveAstar(maze* m);
+
+#endif 
