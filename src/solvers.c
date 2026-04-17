@@ -1,8 +1,16 @@
 #include <stdlib.h>    
 #include <stdbool.h>   
 #include <math.h>      
+#include <pthread.h>
 #include "maze.h"      
 #include "algorithms.h"
+
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 //min heap mein parent ki f value always less than child ki f value
 

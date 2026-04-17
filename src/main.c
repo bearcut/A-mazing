@@ -5,11 +5,14 @@
 #include "algorithms.h"
 #include "display.h"
 
+bool isSolving = false;
+int solverDelayMS = 0;
+pthread_mutex_t gridMutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main() {
-    int solverDelayMS = 0;
+    
     int width,height;
-    bool isSolving = false;
+    
     
     scanf("%d %d",&width,&height);
 
