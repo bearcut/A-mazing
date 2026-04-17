@@ -55,6 +55,7 @@ typedef struct {
 extern pthread_mutex_t gridMutex;
 extern int solverDelayMS;
 extern bool isSolving;
+extern bool abortSolver;
 
 maze* allocMaze(int height,int width); 
 void freeMaze(maze* maze); 

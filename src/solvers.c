@@ -5,7 +5,6 @@
 #include "maze.h"      
 #include "algorithms.h"
 
-
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -30,8 +29,6 @@ MinHeap* createHeap(int capacity) {
 }
 
 // function to swap pointers 
-/* we will push the largest value to the end of the heap and from there we sort that one element such that the 
-   condition ki parent node must have the f value less than that of child gets satisfied*/
 void swapNodes(AStarNode** a, AStarNode** b) {
     AStarNode* temp = *a;
     *a = *b;
@@ -40,22 +37,16 @@ void swapNodes(AStarNode** a, AStarNode** b) {
 
 // Pushing a node into the heap 
 void pushHeap(MinHeap* heap, AStarNode* node) {
-   
-    // Insert at the very end
     int current = heap->size;
     heap->elements[current] = node;
     heap->size++;
 
-    //sorting that one element we inserted at the end
     while (current > 0) {
         int parent = (current - 1) / 2;
-        
-        // If the current node is better (lower f cost) than its parent, swap them
         if (heap->elements[current]->f_cost < heap->elements[parent]->f_cost) {
             swapNodes(&heap->elements[current], &heap->elements[parent]);
-            current = parent; // Move our tracker up to the parent's index
+            current = parent; 
         } else {
-            // If the parent is smaller, the rule is satisfied.
             break;
         }
     }
@@ -63,66 +54,61 @@ void pushHeap(MinHeap* heap, AStarNode* node) {
 
 // Pop the best node from the heap 
 AStarNode* popHeap(MinHeap* heap) {
-    if (heap->size <= 0) return NULL; // if heap is empty
+    if (heap->size <= 0) return NULL; 
 
-    // The best node is always at the top aka index 0 wala element
     AStarNode* root = heap->elements[0];
-
-    // Move the very last node to the top to fill the hole
     heap->size--;
     heap->elements[0] = heap->elements[heap->size];
 
-    // sort that element now which we have filled in the hole
     int current = 0;
     while (true) {
         int left = 2 * current + 1;
-        int right = 2 * current + 2;          //imagine a binary tree
+        int right = 2 * current + 2;          
         int smallest = current;
 
-        // Checking if left child exists and is smaller than current
         if (left < heap->size && heap->elements[left]->f_cost < heap->elements[smallest]->f_cost) {
             smallest = left;
         }
         
-        // Checking if right child exists and is even smaller
         if (right < heap->size && heap->elements[right]->f_cost < heap->elements[smallest]->f_cost) {
             smallest = right;
         }
 
-        // swap with the smallest child and continue the loop to for sorting that specific element
         if (smallest != current) {
             swapNodes(&heap->elements[current], &heap->elements[smallest]);
-            current = smallest; // Move our tracker down
+            current = smallest; 
         } else {
-            // If we are smaller than both children, we have found our rightful place
             break; 
         }
     }
-
     return root;
 }
 
 // cleaning memory after solver finishes
 void freeHeap(MinHeap* heap) {
     if (heap != NULL) {
-        free(heap->elements); // Free the array of pointers
-        free(heap);           // Free the heap struct itself
+        free(heap->elements); 
+        free(heap);           
     }
 }
 
-float get_h_cost(int x1, int y1, int x2, int y2) 
-{                                                          //manhattan distance for h cost
+float get_h_cost(int x1, int y1, int x2, int y2) {                                                          
     return (float)(abs(x1 - x2) + abs(y1 - y2));
 }
 
 void applyDelay() {
     if (solverDelayMS > 0) {
-        usleep(solverDelayMS * 1000); // usleep takes microseconds
+#ifdef _WIN32
+        Sleep(solverDelayMS); 
+#else
+        usleep(solverDelayMS * 1000); 
+#endif
     }
 }
 
 void* solveAstar(void* arg) {
     isSolving = true;
+    abortSolver = false; // Reset abort flag
     maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
@@ -146,12 +132,12 @@ void* solveAstar(void* arg) {
     solverGrid[startIdx].is_open = true;
     pushHeap(openList, &solverGrid[startIdx]);
 
-    //movements
     int dx[] = {0, 0, -1, 1};
     int dy[] = {-1, 1, 0, 0};
 
-    //main search loop
     while (openList->size > 0) {
+        if (abortSolver) break; // Check for abort
+
         AStarNode* current = popHeap(openList);
         current->is_open = false;
         current->is_closed = true;
@@ -164,16 +150,27 @@ void* solveAstar(void* arg) {
         pthread_mutex_unlock(&gridMutex);
         applyDelay();
 
+        // GOAL CHECK & BACKWARD PATH RECONSTRUCTION
         if (current->x == m->goal.x && current->y == m->goal.y) {
             int currIdx = current->index;
             while (currIdx != -1) {
+                if (abortSolver) break; // Check for abort during backtracking
+                
                 solverGrid[currIdx].is_path = true; 
+                
+                // Visual update for path drawing
+                pthread_mutex_lock(&gridMutex);
+                if (m->grid[currIdx] != startCell && m->grid[currIdx] != goalCell) {
+                    m->grid[currIdx] = pathCell;
+                }
+                pthread_mutex_unlock(&gridMutex);
+                applyDelay();
+
                 currIdx = solverGrid[currIdx].parent_index; 
             }
             break; 
         }
 
-    // E. NEIGHBOR EXPLORATION
         for (int i = 0; i < 4; i++) {
             int nx = current->x + dx[i];
             int ny = current->y + dy[i];
@@ -200,24 +197,15 @@ void* solveAstar(void* arg) {
     }
     
     freeHeap(openList);
-    
-    // Reflect the path before freeing with visualization
-    for (int i = 0; i < totalCells; i++) {
-        if (solverGrid[i].is_path && m->grid[i] != startCell && m->grid[i] != goalCell) {
-            pthread_mutex_lock(&gridMutex);
-            m->grid[i] = pathCell;
-            pthread_mutex_unlock(&gridMutex);
-            applyDelay();
-        }
-    }
-    
     free(solverGrid);
     isSolving = false;
+    abortSolver = false;
     return NULL;
 }
 
 void* solveDijkstra(void* arg) {
     isSolving = true;
+    abortSolver = false; // Reset abort flag
     maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
@@ -246,6 +234,8 @@ void* solveDijkstra(void* arg) {
     int dy[] = {-1, 1, 0, 0};
 
     while (openList->size > 0) {
+        if (abortSolver) break; // Check for abort
+
         AStarNode* current = popHeap(openList);
         current->is_open = false;
         current->is_closed = true;
@@ -258,10 +248,22 @@ void* solveDijkstra(void* arg) {
         pthread_mutex_unlock(&gridMutex);
         applyDelay();
 
+        // GOAL CHECK & BACKWARD PATH RECONSTRUCTION
         if (current->index == goalIdx) {
             int currIdx = current->index;
             while (currIdx != -1) {
+                if (abortSolver) break; // Check for abort during backtracking
+                
                 solverGrid[currIdx].is_path = true; 
+                
+                // Visual update for path drawing
+                pthread_mutex_lock(&gridMutex);
+                if (m->grid[currIdx] != startCell && m->grid[currIdx] != goalCell) {
+                    m->grid[currIdx] = pathCell;
+                }
+                pthread_mutex_unlock(&gridMutex);
+                applyDelay();
+                
                 currIdx = solverGrid[currIdx].parent_index; 
             }
             break; 
@@ -293,23 +295,15 @@ void* solveDijkstra(void* arg) {
     }
     
     freeHeap(openList);
-    
-    // Reflect the path before freeing with visualization
-    for (int i = 0; i < totalCells; i++) {
-        if (solverGrid[i].is_path && m->grid[i] != startCell && m->grid[i] != goalCell) {
-            pthread_mutex_lock(&gridMutex);
-            m->grid[i] = pathCell;
-            pthread_mutex_unlock(&gridMutex);
-            applyDelay();
-        }
-    }
-    
     free(solverGrid);
     isSolving = false;
+    abortSolver = false;
     return NULL;
 }
+
 void* solveBFS(void* arg) {
     isSolving = true;
+    abortSolver = false; // Reset abort flag
     maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     int* queue = (int*)malloc(totalCells * sizeof(int));
@@ -323,14 +317,16 @@ void* solveBFS(void* arg) {
     int startIdx = (m->start.y * m->width) + m->start.x;
     int goalIdx = (m->goal.y * m->width) + m->goal.x;
 
-    queue[tail++] = startIdx; // Enqueue
+    queue[tail++] = startIdx; 
     visited[startIdx] = true;
 
     int dx[] = {0, 0, -1, 1};
     int dy[] = {-1, 1, 0, 0};
 
     while (head < tail) {
-        int curr = queue[head++]; // Dequeue
+        if (abortSolver) break; // Check for abort
+
+        int curr = queue[head++]; 
         
         // Visual update for explored cells
         pthread_mutex_lock(&gridMutex);
@@ -355,7 +351,7 @@ void* solveBFS(void* arg) {
                 if (m->grid[nIdx] != wallCell && !visited[nIdx]) {
                     visited[nIdx] = true;
                     parent[nIdx] = curr;
-                    queue[tail++] = nIdx; // Enqueue
+                    queue[tail++] = nIdx; 
                 }
             }
         }
@@ -364,6 +360,8 @@ void* solveBFS(void* arg) {
     // Path Reconstruction
     int curr = goalIdx;
     while (parent[curr] != -1 && curr != startIdx) {
+        if (abortSolver) break; // Check for abort during backtracking
+
         curr = parent[curr];
         if (curr != startIdx) {
             pthread_mutex_lock(&gridMutex);
@@ -377,11 +375,13 @@ void* solveBFS(void* arg) {
     free(parent);
     free(visited);
     isSolving = false;
+    abortSolver = false;
     return NULL;
 }
 
 void* solveDFS(void* arg) {
     isSolving = true;
+    abortSolver = false; // Reset abort flag
     maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     int* stack = (int*)malloc(totalCells * sizeof(int));
@@ -395,20 +395,25 @@ void* solveDFS(void* arg) {
     int startIdx = (m->start.y * m->width) + m->start.x;
     int goalIdx = (m->goal.y * m->width) + m->goal.x;
 
-    stack[++top] = startIdx; // Push
+    stack[++top] = startIdx; 
     visited[startIdx] = true;
 
     int dx[] = {0, 0, -1, 1};
     int dy[] = {-1, 1, 0, 0};
 
     while (top >= 0) {
-        int curr = stack[top--]; // Pop
+        if (abortSolver) break; // Check for abort
+
+        int curr = stack[top--]; 
+        
+        // Visual update for explored cells
         pthread_mutex_lock(&gridMutex);
         if (m->grid[curr] != startCell && m->grid[curr] != goalCell) {
             m->grid[curr] = exploredCell;
         }
         pthread_mutex_unlock(&gridMutex);
         applyDelay();
+        
         if (curr == goalIdx) break;
 
         int cx = curr % m->width;
@@ -424,7 +429,7 @@ void* solveDFS(void* arg) {
                 if (m->grid[nIdx] != wallCell && !visited[nIdx]) {
                     visited[nIdx] = true;
                     parent[nIdx] = curr;
-                    stack[++top] = nIdx; // Push
+                    stack[++top] = nIdx; 
                 }
             }
         }
@@ -433,6 +438,8 @@ void* solveDFS(void* arg) {
     // Path Reconstruction
     int curr = goalIdx;
     while (parent[curr] != -1 && curr != startIdx) {
+        if (abortSolver) break; // Check for abort during backtracking
+        
         curr = parent[curr];
         if (curr != startIdx) {
             pthread_mutex_lock(&gridMutex);
@@ -446,6 +453,6 @@ void* solveDFS(void* arg) {
     free(parent);
     free(visited);
     isSolving = false;
+    abortSolver = false;
     return NULL;
 }
-
