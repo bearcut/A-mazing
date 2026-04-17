@@ -6,4 +6,10 @@
 
 void generateMazeDFS(maze* m);
 
-#endif
+//solvers
+void solveAstar(maze* m);
+void solveDijkstra(maze* m);
+void solveBFS(maze* m);
+void solveDFS(maze* m);
+
+#endif 
