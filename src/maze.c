@@ -17,3 +17,13 @@ void freeMaze(maze* maze){
         free(maze);
     }
 }
+
+void resetMazePaths(maze* m) {
+    pthread_mutex_lock(&gridMutex);
+    for (int i = 0; i < m->width * m->height; i++) {
+        if (m->grid[i] == pathCell || m->grid[i] == exploredCell) {
+            m->grid[i] = emptyCell;
+        }
+    }
+    pthread_mutex_unlock(&gridMutex);
+}

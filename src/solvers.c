@@ -107,23 +107,30 @@ float get_h_cost(int x1, int y1, int x2, int y2)
     return (float)(abs(x1 - x2) + abs(y1 - y2));
 }
 
-void solveAstar(maze* m)
-{
-int totalCells = m->width * m->height;
-AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); //allocating another maze of same size as that of maze to work on
-
-for(int i = 0; i < totalCells; i++) {            //loop to initialise each cell 
-    solverGrid[i].index = i;
-    solverGrid[i].x = i % m->width;    //coords
-    solverGrid[i].y = i / m->width;    //coords
-    solverGrid[i].g_cost = 999999; //initialise each cell
-    solverGrid[i].is_open = false;   
-    solverGrid[i].is_closed = false;
-    solverGrid[i].parent_index = -1;
-    solverGrid[i].is_path = false;   
+void applyDelay() {
+    if (solverDelayMS > 0) {
+        usleep(solverDelayMS * 1000); // usleep takes microseconds
+    }
 }
-//setting up the start node and the heap
-MinHeap* openList = createHeap(totalCells);
+
+void* solveAstar(void* arg) {
+    isSolving = true;
+    maze* m = (maze*)arg;
+    int totalCells = m->width * m->height;
+    AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
+
+    for(int i = 0; i < totalCells; i++) {            
+        solverGrid[i].index = i;
+        solverGrid[i].x = i % m->width;    
+        solverGrid[i].y = i / m->width;    
+        solverGrid[i].g_cost = 999999; 
+        solverGrid[i].is_open = false;   
+        solverGrid[i].is_closed = false;
+        solverGrid[i].parent_index = -1;
+        solverGrid[i].is_path = false;   
+    }
+
+    MinHeap* openList = createHeap(totalCells);
     int startIdx = (m->start.y * m->width) + m->start.x;
     
     solverGrid[startIdx].g_cost = 0;
@@ -141,14 +148,21 @@ MinHeap* openList = createHeap(totalCells);
         current->is_open = false;
         current->is_closed = true;
 
-    // GOAL CHECK & PATH RECONSTRUCTION (Backtracking)
+        // Visual update for explored cells
+        pthread_mutex_lock(&gridMutex);
+        if (m->grid[current->index] != startCell && m->grid[current->index] != goalCell) {
+            m->grid[current->index] = exploredCell;
+        }
+        pthread_mutex_unlock(&gridMutex);
+        applyDelay();
+
         if (current->x == m->goal.x && current->y == m->goal.y) {
             int currIdx = current->index;
             while (currIdx != -1) {
-                solverGrid[currIdx].is_path = true; // Mark node as part of final path
-                currIdx = solverGrid[currIdx].parent_index; // Walk backward
+                solverGrid[currIdx].is_path = true; 
+                currIdx = solverGrid[currIdx].parent_index; 
             }
-            break; // Exit the while loop when we are done
+            break; 
         }
 
     // E. NEIGHBOR EXPLORATION
@@ -176,19 +190,27 @@ MinHeap* openList = createHeap(totalCells);
             }
         }
     }
-freeHeap(openList);
-//reflect the path before freeing
-for (int i = 0; i < totalCells; i++) {
-        if (solverGrid[i].is_path) {
-            if (m->grid[i] != startCell && m->grid[i] != goalCell) {
-                m->grid[i] = pathCell;
-            }
+    
+    freeHeap(openList);
+    
+    // Reflect the path before freeing with visualization
+    for (int i = 0; i < totalCells; i++) {
+        if (solverGrid[i].is_path && m->grid[i] != startCell && m->grid[i] != goalCell) {
+            pthread_mutex_lock(&gridMutex);
+            m->grid[i] = pathCell;
+            pthread_mutex_unlock(&gridMutex);
+            applyDelay();
         }
     }
-free(solverGrid);
+    
+    free(solverGrid);
+    isSolving = false;
+    return NULL;
 }
 
-void solveDijkstra(maze* m) {
+void* solveDijkstra(void* arg) {
+    isSolving = true;
+    maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
 
@@ -220,6 +242,14 @@ void solveDijkstra(maze* m) {
         current->is_open = false;
         current->is_closed = true;
 
+        // Visual update for explored cells
+        pthread_mutex_lock(&gridMutex);
+        if (m->grid[current->index] != startCell && m->grid[current->index] != goalCell) {
+            m->grid[current->index] = exploredCell;
+        }
+        pthread_mutex_unlock(&gridMutex);
+        applyDelay();
+
         if (current->index == goalIdx) {
             int currIdx = current->index;
             while (currIdx != -1) {
@@ -242,7 +272,7 @@ void solveDijkstra(maze* m) {
                     if (tentative_g < solverGrid[neighborIdx].g_cost) {
                         solverGrid[neighborIdx].parent_index = current->index;
                         solverGrid[neighborIdx].g_cost = tentative_g;
-                        solverGrid[neighborIdx].f_cost = tentative_g; // f = g + 0
+                        solverGrid[neighborIdx].f_cost = tentative_g; 
 
                         if (!solverGrid[neighborIdx].is_open) {
                             solverGrid[neighborIdx].is_open = true;
@@ -256,15 +286,23 @@ void solveDijkstra(maze* m) {
     
     freeHeap(openList);
     
+    // Reflect the path before freeing with visualization
     for (int i = 0; i < totalCells; i++) {
         if (solverGrid[i].is_path && m->grid[i] != startCell && m->grid[i] != goalCell) {
+            pthread_mutex_lock(&gridMutex);
             m->grid[i] = pathCell;
+            pthread_mutex_unlock(&gridMutex);
+            applyDelay();
         }
     }
+    
     free(solverGrid);
+    isSolving = false;
+    return NULL;
 }
-
-void solveBFS(maze* m) {
+void* solveBFS(void* arg) {
+    isSolving = true;
+    maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     int* queue = (int*)malloc(totalCells * sizeof(int));
     int* parent = (int*)malloc(totalCells * sizeof(int));
@@ -286,6 +324,14 @@ void solveBFS(maze* m) {
     while (head < tail) {
         int curr = queue[head++]; // Dequeue
         
+        // Visual update for explored cells
+        pthread_mutex_lock(&gridMutex);
+        if (m->grid[curr] != startCell && m->grid[curr] != goalCell) {
+            m->grid[curr] = exploredCell;
+        }
+        pthread_mutex_unlock(&gridMutex);
+        applyDelay();
+
         if (curr == goalIdx) break;
 
         int cx = curr % m->width;
@@ -311,15 +357,24 @@ void solveBFS(maze* m) {
     int curr = goalIdx;
     while (parent[curr] != -1 && curr != startIdx) {
         curr = parent[curr];
-        if (curr != startIdx) m->grid[curr] = pathCell;
+        if (curr != startIdx) {
+            pthread_mutex_lock(&gridMutex);
+            m->grid[curr] = pathCell;
+            pthread_mutex_unlock(&gridMutex);
+            applyDelay();
+        }
     }
 
     free(queue);
     free(parent);
     free(visited);
+    isSolving = false;
+    return NULL;
 }
 
-void solveDFS(maze* m) {
+void* solveDFS(void* arg) {
+    isSolving = true;
+    maze* m = (maze*)arg;
     int totalCells = m->width * m->height;
     int* stack = (int*)malloc(totalCells * sizeof(int));
     int* parent = (int*)malloc(totalCells * sizeof(int));
@@ -340,7 +395,12 @@ void solveDFS(maze* m) {
 
     while (top >= 0) {
         int curr = stack[top--]; // Pop
-        
+        pthread_mutex_lock(&gridMutex);
+        if (m->grid[curr] != startCell && m->grid[curr] != goalCell) {
+            m->grid[curr] = exploredCell;
+        }
+        pthread_mutex_unlock(&gridMutex);
+        applyDelay();
         if (curr == goalIdx) break;
 
         int cx = curr % m->width;
@@ -366,11 +426,18 @@ void solveDFS(maze* m) {
     int curr = goalIdx;
     while (parent[curr] != -1 && curr != startIdx) {
         curr = parent[curr];
-        if (curr != startIdx) m->grid[curr] = pathCell;
+        if (curr != startIdx) {
+            pthread_mutex_lock(&gridMutex);
+            m->grid[curr] = pathCell;
+            pthread_mutex_unlock(&gridMutex);
+            applyDelay();
+        }
     }
 
     free(stack);
     free(parent);
     free(visited);
+    isSolving = false;
+    return NULL;
 }
 

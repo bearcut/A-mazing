@@ -4,6 +4,7 @@
 
 
 void printMazeConsole(maze* m);
+void drawMazeRaylib(maze* m, int screenWidth, int screenHeight);
 
 
 

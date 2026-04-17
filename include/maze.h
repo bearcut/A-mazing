@@ -1,14 +1,15 @@
 #ifndef MAZE_H
 #define MAZE_H
 #include<stdbool.h>
-  
+#include <pthread.h>
 
 typedef enum{
     emptyCell = 0,
     wallCell = 1,
     startCell = 2,
     goalCell = 3,
-    pathCell = 4
+    pathCell = 4,
+    exploredCell = 5
 } cellType;
 
 
@@ -50,6 +51,10 @@ typedef struct {
     int y;
 } Position;
 
+// Globals for multi-threading and visualization
+extern pthread_mutex_t gridMutex;
+extern int solverDelayMS;
+extern bool isSolving;
 
 maze* allocMaze(int height,int width); 
 void freeMaze(maze* maze); 

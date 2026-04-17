@@ -9,9 +9,9 @@ void generateMazeSidewinder(maze* m);
 void generateMazeDFS(maze* m);
 
 //solvers
-void solveAstar(maze* m);
-void solveDijkstra(maze* m);
-void solveBFS(maze* m);
-void solveDFS(maze* m);
+void* solveAstar(void* arg);
+void* solveDijkstra(void* arg);
+void* solveBFS(void* arg);
+void* solveDFS(void* arg);
 
 #endif 
