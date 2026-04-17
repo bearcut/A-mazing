@@ -3,7 +3,9 @@
 
 #include "maze.h"
 
-// Generates a maze using Depth-First Search (Recursive Backtracker)
+//generators
+void generateMazeBinaryTree(maze* m);
+void generateMazeSidewinder(maze* m);
 void generateMazeDFS(maze* m);
 
 #endif
