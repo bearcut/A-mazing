@@ -17,7 +17,7 @@ int main() {
     generateMazeDFS(myMaze);
 
     printf("Solving maze with A*...\n");
-    solveAstar(myMaze);
+    solveDijkstra(myMaze);
 
     printf("Resulting Maze:\n");
     printMazeConsole(myMaze);

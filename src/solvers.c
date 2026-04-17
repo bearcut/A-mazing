@@ -190,3 +190,191 @@ for (int i = 0; i < totalCells; i++) {
 free(solverGrid);
 }
 
+void solveDijkstra(maze* m) {
+    // Dijkstra is just A* where h_cost is 0. 
+    // We can reuse the AStarNode and MinHeap logic exactly as it is.
+    int totalCells = m->width * m->height;
+    AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
+
+    for(int i = 0; i < totalCells; i++) {            
+        solverGrid[i].index = i;
+        solverGrid[i].x = i % m->width;    
+        solverGrid[i].y = i / m->width;    
+        solverGrid[i].g_cost = 999999; 
+        solverGrid[i].is_open = false;   
+        solverGrid[i].is_closed = false;
+        solverGrid[i].parent_index = -1;
+        solverGrid[i].is_path = false;   
+    }
+
+    MinHeap* openList = createHeap(totalCells);
+    int startIdx = (m->start.y * m->width) + m->start.x;
+    int goalIdx = (m->goal.y * m->width) + m->goal.x;
+    
+    solverGrid[startIdx].g_cost = 0;
+    solverGrid[startIdx].f_cost = 0; // h is always 0 for Dijkstra
+    solverGrid[startIdx].is_open = true;
+    pushHeap(openList, &solverGrid[startIdx]);
+
+    int dx[] = {0, 0, -1, 1};
+    int dy[] = {-1, 1, 0, 0};
+
+    while (openList->size > 0) {
+        AStarNode* current = popHeap(openList);
+        current->is_open = false;
+        current->is_closed = true;
+
+        if (current->index == goalIdx) {
+            int currIdx = current->index;
+            while (currIdx != -1) {
+                solverGrid[currIdx].is_path = true; 
+                currIdx = solverGrid[currIdx].parent_index; 
+            }
+            break; 
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int nx = current->x + dx[i];
+            int ny = current->y + dy[i];
+
+            if (nx >= 0 && nx < m->width && ny >= 0 && ny < m->height) {
+                int neighborIdx = (ny * m->width) + nx;
+
+                if (m->grid[neighborIdx] != wallCell && !solverGrid[neighborIdx].is_closed) {
+                    float tentative_g = current->g_cost + 1;
+
+                    if (tentative_g < solverGrid[neighborIdx].g_cost) {
+                        solverGrid[neighborIdx].parent_index = current->index;
+                        solverGrid[neighborIdx].g_cost = tentative_g;
+                        solverGrid[neighborIdx].f_cost = tentative_g; // f = g + 0
+
+                        if (!solverGrid[neighborIdx].is_open) {
+                            solverGrid[neighborIdx].is_open = true;
+                            pushHeap(openList, &solverGrid[neighborIdx]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    freeHeap(openList);
+    
+    for (int i = 0; i < totalCells; i++) {
+        if (solverGrid[i].is_path && m->grid[i] != startCell && m->grid[i] != goalCell) {
+            m->grid[i] = pathCell;
+        }
+    }
+    free(solverGrid);
+}
+
+void solveBFS(maze* m) {
+    int totalCells = m->width * m->height;
+    int* queue = (int*)malloc(totalCells * sizeof(int));
+    int* parent = (int*)malloc(totalCells * sizeof(int));
+    bool* visited = (bool*)calloc(totalCells, sizeof(bool));
+
+    int head = 0, tail = 0;
+
+    for (int i = 0; i < totalCells; i++) parent[i] = -1;
+
+    int startIdx = (m->start.y * m->width) + m->start.x;
+    int goalIdx = (m->goal.y * m->width) + m->goal.x;
+
+    queue[tail++] = startIdx; // Enqueue
+    visited[startIdx] = true;
+
+    int dx[] = {0, 0, -1, 1};
+    int dy[] = {-1, 1, 0, 0};
+
+    while (head < tail) {
+        int curr = queue[head++]; // Dequeue
+        
+        if (curr == goalIdx) break;
+
+        int cx = curr % m->width;
+        int cy = curr / m->width;
+
+        for (int i = 0; i < 4; i++) {
+            int nx = cx + dx[i];
+            int ny = cy + dy[i];
+
+            if (nx >= 0 && nx < m->width && ny >= 0 && ny < m->height) {
+                int nIdx = ny * m->width + nx;
+
+                if (m->grid[nIdx] != wallCell && !visited[nIdx]) {
+                    visited[nIdx] = true;
+                    parent[nIdx] = curr;
+                    queue[tail++] = nIdx; // Enqueue
+                }
+            }
+        }
+    }
+
+    // Path Reconstruction
+    int curr = goalIdx;
+    while (parent[curr] != -1 && curr != startIdx) {
+        curr = parent[curr];
+        if (curr != startIdx) m->grid[curr] = pathCell;
+    }
+
+    free(queue);
+    free(parent);
+    free(visited);
+}
+
+void solveDFS(maze* m) {
+    int totalCells = m->width * m->height;
+    int* stack = (int*)malloc(totalCells * sizeof(int));
+    int* parent = (int*)malloc(totalCells * sizeof(int));
+    bool* visited = (bool*)calloc(totalCells, sizeof(bool));
+
+    int top = -1;
+
+    for (int i = 0; i < totalCells; i++) parent[i] = -1;
+
+    int startIdx = (m->start.y * m->width) + m->start.x;
+    int goalIdx = (m->goal.y * m->width) + m->goal.x;
+
+    stack[++top] = startIdx; // Push
+    visited[startIdx] = true;
+
+    int dx[] = {0, 0, -1, 1};
+    int dy[] = {-1, 1, 0, 0};
+
+    while (top >= 0) {
+        int curr = stack[top--]; // Pop
+        
+        if (curr == goalIdx) break;
+
+        int cx = curr % m->width;
+        int cy = curr / m->width;
+
+        for (int i = 0; i < 4; i++) {
+            int nx = cx + dx[i];
+            int ny = cy + dy[i];
+
+            if (nx >= 0 && nx < m->width && ny >= 0 && ny < m->height) {
+                int nIdx = ny * m->width + nx;
+
+                if (m->grid[nIdx] != wallCell && !visited[nIdx]) {
+                    visited[nIdx] = true;
+                    parent[nIdx] = curr;
+                    stack[++top] = nIdx; // Push
+                }
+            }
+        }
+    }
+
+    // Path Reconstruction
+    int curr = goalIdx;
+    while (parent[curr] != -1 && curr != startIdx) {
+        curr = parent[curr];
+        if (curr != startIdx) m->grid[curr] = pathCell;
+    }
+
+    free(stack);
+    free(parent);
+    free(visited);
+}
+
