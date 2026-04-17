@@ -7,7 +7,8 @@ typedef enum{
     emptyCell = 0,
     wallCell = 1,
     startCell = 2,
-    goalCell = 3
+    goalCell = 3,
+    pathCell = 4
 } cellType;
 
 

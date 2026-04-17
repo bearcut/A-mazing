@@ -178,6 +178,15 @@ MinHeap* openList = createHeap(totalCells);
     }
 freeHeap(openList);
 //reflect the path before freeing
+for (int i = 0; i < totalCells; i++) {
+        if (solverGrid[i].is_path) {
+            // We ensure we don't overwrite the Start or Goal cells 
+            // so they still render as 'S' and 'G'
+            if (m->grid[i] != startCell && m->grid[i] != goalCell) {
+                m->grid[i] = pathCell;
+            }
+        }
+    }
 free(solverGrid);
 }
 
