@@ -61,4 +61,5 @@ void freeMaze(maze* maze);
 cell* getCell(maze* maze,int x,int y);
 cellType getType(cell* cell);
 void setCell(maze* maze,cell* cell,cellType);
+void resetMazePaths(maze* m);
 #endif
