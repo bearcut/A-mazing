@@ -14,4 +14,7 @@ void* solveDijkstra(void* arg);
 void* solveBFS(void* arg);
 void* solveDFS(void* arg);
 
+// Benchmark Tool
+void runBenchmark(maze* m);
+
 #endif 
