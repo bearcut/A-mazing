@@ -97,9 +97,6 @@ void generateMazeDFS(maze* m) {
 
     m->grid[getIndex(m, 1, 1)] = startCell;
     m->grid[getIndex(m, m->width - 2, m->height - 2)] = goalCell;
-<<<<<<< HEAD
-}
-=======
 }
 
 void generateMazeBinaryTree(maze* m) {
@@ -181,4 +178,3 @@ void generateMazeSidewinder(maze* m) {
     m->grid[getIndex(m, 1, 1)] = startCell;
     m->grid[getIndex(m, m->width - 2, m->height - 2)] = goalCell;
 }
->>>>>>> generator

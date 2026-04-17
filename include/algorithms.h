@@ -3,13 +3,9 @@
 
 #include "maze.h"
 
-<<<<<<< HEAD
-
-=======
 //generators
 void generateMazeBinaryTree(maze* m);
 void generateMazeSidewinder(maze* m);
->>>>>>> generator
 void generateMazeDFS(maze* m);
 
 //solvers

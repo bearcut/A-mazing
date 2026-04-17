@@ -180,8 +180,6 @@ freeHeap(openList);
 //reflect the path before freeing
 for (int i = 0; i < totalCells; i++) {
         if (solverGrid[i].is_path) {
-            // We ensure we don't overwrite the Start or Goal cells 
-            // so they still render as 'S' and 'G'
             if (m->grid[i] != startCell && m->grid[i] != goalCell) {
                 m->grid[i] = pathCell;
             }
@@ -191,8 +189,6 @@ free(solverGrid);
 }
 
 void solveDijkstra(maze* m) {
-    // Dijkstra is just A* where h_cost is 0. 
-    // We can reuse the AStarNode and MinHeap logic exactly as it is.
     int totalCells = m->width * m->height;
     AStarNode* solverGrid = malloc(totalCells * sizeof(AStarNode)); 
 

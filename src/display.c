@@ -12,12 +12,8 @@ void printMazeConsole(maze* m) {
             int type = m->grid[(y * m->width) + x];
             if (type == wallCell) printf("██"); // Wall
             else if (type == startCell) printf(" S"); 
-<<<<<<< HEAD
-            else if (type == goalCell) printf(" G");  
-=======
             else if (type == goalCell) printf(" G"); 
             else if (type == pathCell) printf(" *"); 
->>>>>>> solver
             else printf("  "); 
         }
         printf("\n");
