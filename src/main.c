@@ -100,8 +100,9 @@ int main() {
     char widthStr[8] = "41";
     char heightStr[8] = "41";
     char delayStr[8] = "10";
+    char braidProbStr[8] = "5";
     int activeBox = 0; 
-
+    int braidProb = 5;
     int targetWidth = 41;
     int targetHeight = 41;
 
@@ -192,41 +193,64 @@ int main() {
                     benchmarkResults[0] = '\0';
                 }
 
-                DrawText("Algorithms", sbX + 20, 100, 20, DARKGRAY);
+                braidProb = atoi(braidProbStr); // Update int from string
+                DrawText("Braid Probability (%)", sbX + 20, 80, 20, DARKGRAY);
+                
+                // ActiveBox 4 used for Braid Input
+                if (DrawNumericTextBox((Rectangle){(float)sbX + 20, 110, 100, 40}, braidProbStr, 8, activeBox == 4)) activeBox = 4;
+                
+                if (DrawButton((Rectangle){(float)sbX + 130, 110, 45, 40}, "-")) { 
+                    if(braidProb > 0) braidProb -= 1; 
+                    sprintf(braidProbStr, "%d", braidProb);
+                }
+                if (DrawButton((Rectangle){(float)sbX + 185, 110, 45, 40}, "+")) { 
+                    if(braidProb < 100) braidProb += 1; 
+                    sprintf(braidProbStr, "%d", braidProb);
+                }
 
-                if (DrawButton((Rectangle){(float)sbX + 20, 130, 220, 40}, "Solve: A*")) {
+                if (DrawButton((Rectangle){(float)sbX + 20, 160, 220, 40}, "Braid Maze")) {
+                    // Convert integer percentage (e.g. 5) to a double (e.g. 0.05)
+                    convertToBraidMaze(myMaze, braidProb / 100.0);
+                    resetMazePaths(myMaze); // Clear any old paths to ensure a clean display
+                }
+                // ------------------------------
+
+                DrawText("Algorithms", sbX + 20, 220, 20, DARKGRAY);
+
+                if (DrawButton((Rectangle){(float)sbX + 20, 250, 220, 40}, "Solve: A*")) {
                     resetMazePaths(myMaze); pthread_create(&solverThread, NULL, solveAstar, (void*)myMaze); pthread_detach(solverThread);
                 }
-                if (DrawButton((Rectangle){(float)sbX + 20, 180, 220, 40}, "Solve: BFS")) {
+                if (DrawButton((Rectangle){(float)sbX + 20, 300, 220, 40}, "Solve: BFS")) {
                     resetMazePaths(myMaze); pthread_create(&solverThread, NULL, solveBFS, (void*)myMaze); pthread_detach(solverThread);
                 }
-                if (DrawButton((Rectangle){(float)sbX + 20, 230, 220, 40}, "Solve: DFS")) {
+                if (DrawButton((Rectangle){(float)sbX + 20, 350, 220, 40}, "Solve: DFS")) {
                     resetMazePaths(myMaze); pthread_create(&solverThread, NULL, solveDFS, (void*)myMaze); pthread_detach(solverThread);
                 }
-                if (DrawButton((Rectangle){(float)sbX + 20, 280, 220, 40}, "Solve: Dijkstra")) {
+                if (DrawButton((Rectangle){(float)sbX + 20, 400, 220, 40}, "Solve: Dijkstra")) {
                     resetMazePaths(myMaze); pthread_create(&solverThread, NULL, solveDijkstra, (void*)myMaze); pthread_detach(solverThread);
                 }
 
-                DrawText("Speed Delay (ms)", sbX + 20, 350, 20, DARKGRAY);
-                if (DrawNumericTextBox((Rectangle){(float)sbX + 20, 380, 220, 40}, delayStr, 8, activeBox == 3)) activeBox = 3;
+                DrawText("Speed Delay (ms)", sbX + 20, 460, 20, DARKGRAY);
+                // ActiveBox 3 used for Delay Input
+                if (DrawNumericTextBox((Rectangle){(float)sbX + 20, 490, 220, 40}, delayStr, 8, activeBox == 3)) activeBox = 3;
 
-                if (DrawButton((Rectangle){(float)sbX + 20, 430, 105, 40}, "-")) { 
+                if (DrawButton((Rectangle){(float)sbX + 20, 540, 105, 40}, "-")) { 
                     if(solverDelayMS > 0) solverDelayMS -= 5; 
                     sprintf(delayStr, "%d", solverDelayMS);
                 }
-                if (DrawButton((Rectangle){(float)sbX + 135, 430, 105, 40}, "+")) { 
+                if (DrawButton((Rectangle){(float)sbX + 135, 540, 105, 40}, "+")) { 
                     solverDelayMS += 5; 
                     sprintf(delayStr, "%d", solverDelayMS);
                 }
 
-                DrawLine(sbX + 20, 500, sbX + 240, 500, GRAY);
-                if (DrawButton((Rectangle){(float)sbX + 20, 530, 220, 40}, "Run Benchmark")) runBenchmark(myMaze);
+                DrawLine(sbX + 20, 600, sbX + 240, 600, GRAY);
+                if (DrawButton((Rectangle){(float)sbX + 20, 620, 220, 40}, "Run Benchmark")) runBenchmark(myMaze);
                 
-                if (benchmarkResults[0] != '\0') DrawText(benchmarkResults, sbX + 20, 600, 20, BLACK);
+                if (benchmarkResults[0] != '\0') DrawText(benchmarkResults, sbX + 20, 680, 20, BLACK);
                 
             } else {
                 // DRAW THE ABORT BUTTON WHEN SOLVING
-                if (DrawButton((Rectangle){(float)sbX + 20, 400, 220, 50}, "ABORT SOLVING")) {
+                if (DrawButton((Rectangle){(float)sbX + 20, 500, 220, 50}, "ABORT SOLVING")) {
                     abortSolver = true; // Signal the thread to stop immediately
                 }
             }
