@@ -80,7 +80,7 @@ make
 ```
 ### For Windows
 
-Downlaod from [releases](https://github.com/bearcut/A-mazing/releases/tag/v1.0.1).
+Download from [releases](https://github.com/bearcut/A-mazing/releases/tag/v1.0.1).
 
 ## How to Use
 
