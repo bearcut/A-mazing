@@ -4,20 +4,20 @@ A high-performance, real-time maze generation and pathfinding visualizer built i
 
 ---
 
-## 🚀 Features
+##  Features
 
-### 🎯 Maze Generation Algorithms
+###  Maze Generation Algorithms
 - **Depth-First Search (DFS)**: Stack-based recursive generation with backtracking
 - **Binary Tree**: Fast, biased generation algorithm
 - **Sidewinder**: Horizontal bias generation with efficient carving
 
-### 🧭 Pathfinding Solvers
+###  Pathfinding Solvers
 - **A* Search**: Heuristic-based optimal pathfinding
 - **Breadth-First Search (BFS)**: Guaranteed shortest path
 - **Depth-First Search (DFS)**: Memory-efficient exploration
 - **Dijkstra's Algorithm**: Uniform cost search with optimality
 
-### 🎨 GUI Features
+###  GUI Features
 - **Interactive Setup Screen**: Configure maze dimensions (5-201 cells)
 - **Real-Time Visualization**: Watch algorithms in action with color-coded cells
   - Green: Start position
@@ -30,7 +30,7 @@ A high-performance, real-time maze generation and pathfinding visualizer built i
 - **Resizable Window**: Dynamic UI adapting to window size (minimum 800×600)
 - **Abort Functionality**: Stop solver mid-execution
 
-### 🚀 Technical Features
+###  Technical Features
 - **Multithreading**: Solver runs on separate thread to prevent UI blocking
   - Uses POSIX pthread for cross-platform compatibility
   - Thread-safe grid access with mutex locks
@@ -73,14 +73,14 @@ A-mazing/
 ### Building(Linux)
 
 ```bash
-git clone [https://github.com/bearcut/A-mazing.git](https://github.com/bearcut/A-mazing.git)
+git clone https://github.com/bearcut/A-mazing.git
 cd A-mazing
 make
 ./bin/a_mazing
 ```
 ### For Windows
 
-Downlaod from releases.
+Downlaod from [releases](https://github.com/bearcut/A-mazing/releases/tag/v1.0.1).
 
 ## How to Use
 
@@ -165,6 +165,3 @@ Downlaod from releases.
 
 This project is open source and available under the MIT License.
 
-## Author
-
-Created as an educational demonstration of algorithms, data structures, and concurrent programming in C.

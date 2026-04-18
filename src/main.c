@@ -124,9 +124,6 @@ int main() {
         targetHeight = atoi(heightStr);
         solverDelayMS = atoi(delayStr);
 
-        // ==========================================
-        // SCREEN 1: SETUP & GENERATION
-        // ==========================================
         if (currentScreen == SCREEN_SETUP) {
             DrawText("MAZE SETUP", screenWidth/2 - MeasureText("MAZE SETUP", 40)/2, 100, 40, DARKGRAY);
 
@@ -172,9 +169,8 @@ int main() {
             }
         }
 
-        // ==========================================
-        // SCREEN 2: VISUALIZATION & SOLVING
-        // ==========================================
+        //visualization and solving ke liye
+        
         else if (currentScreen == SCREEN_SOLVER) {
             
             if (myMaze) drawMazeRaylib(myMaze, mazeAreaWidth, screenHeight); 
