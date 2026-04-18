@@ -178,3 +178,73 @@ void generateMazeSidewinder(maze* m) {
     m->grid[getIndex(m, 1, 1)] = startCell;
     m->grid[getIndex(m, m->width - 2, m->height - 2)] = goalCell;
 }
+
+void convertToBraidMaze(maze* m, double extraWallRemovalChance) {
+    srand(time(NULL));
+
+    // Directional offsets for North, South, East, West
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {-1, 1, 0, 0};
+
+    for (int y = 1; y < m->height - 1; y += 2) {
+        for (int x = 1; x < m->width - 1; x += 2) {
+            
+            // Only evaluate empty path cells
+            if (m->grid[getIndex(m, x, y)] == wallCell) continue;
+
+            int wallCount = 0;
+            int validWalls[4][2]; // Stores coordinates of walls we can safely remove
+            int numValidWalls = 0;
+
+            // Check all 4 surrounding directions
+            for (int i = 0; i < 4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+
+                if (m->grid[getIndex(m, nx, ny)] == wallCell) {
+                    wallCount++;
+                    
+                    int pastWallX = nx + dx[i];
+                    int pastWallY = ny + dy[i];
+                    
+                    if (isValid(m, pastWallX, pastWallY)) {
+                        validWalls[numValidWalls][0] = nx;
+                        validWalls[numValidWalls][1] = ny;
+                        numValidWalls++;
+                    }
+                }
+            }
+
+            if (wallCount == 3 && numValidWalls > 0) {
+                // Pick a random valid wall and knock it down
+                int randIndex = rand() % numValidWalls;
+                int wx = validWalls[randIndex][0];
+                int wy = validWalls[randIndex][1];
+                m->grid[getIndex(m, wx, wy)] = emptyCell;
+            }
+        }
+    }
+
+    if (extraWallRemovalChance > 0.0) {
+        for (int y = 1; y < m->height - 1; y++) {
+            for (int x = 1; x < m->width - 1; x++) {
+                
+                if (m->grid[getIndex(m, x, y)] == wallCell) {
+                    // Check if the wall separates two empty spaces horizontally or vertically
+                    bool separatesHorizontally = (m->grid[getIndex(m, x-1, y)] == emptyCell && 
+                                                  m->grid[getIndex(m, x+1, y)] == emptyCell);
+                                                  
+                    bool separatesVertically =   (m->grid[getIndex(m, x, y-1)] == emptyCell && 
+                                                  m->grid[getIndex(m, x, y+1)] == emptyCell);
+
+                    if (separatesHorizontally || separatesVertically) {
+                        double chance = (double)rand() / RAND_MAX;
+                        if (chance < extraWallRemovalChance) {
+                            m->grid[getIndex(m, x, y)] = emptyCell;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
