@@ -19,32 +19,32 @@ typedef struct {
     int capacity;      //total cells in maze
 } MinHeap;
 
-// initialising the heap
+
 MinHeap* createHeap(int capacity) {
     MinHeap* heap = (MinHeap*)malloc(sizeof(MinHeap));
-    heap->elements = (AStarNode**)malloc(capacity * sizeof(AStarNode*));
+    heap->elements = (AStarNode**)malloc(capacity * sizeof(AStarNode*));      // this part will initialise our min-heap(open list)
     heap->size = 0;
     heap->capacity = capacity;
     return heap;
 }
 
-// function to swap pointers 
+
 void swapNodes(AStarNode** a, AStarNode** b) {
-    AStarNode* temp = *a;
+    AStarNode* temp = *a;                                  //pointer swappping function
     *a = *b;
     *b = temp;
 }
 
-// Pushing a node into the heap 
+// Function to push a node into the heap
 void pushHeap(MinHeap* heap, AStarNode* node) {
     int current = heap->size;
-    heap->elements[current] = node;
+    heap->elements[current] = node;                  // this block will put the node to the last of our min-heap
     heap->size++;
 
     while (current > 0) {
         int parent = (current - 1) / 2;
-        if (heap->elements[current]->f_cost < heap->elements[parent]->f_cost) {
-            swapNodes(&heap->elements[current], &heap->elements[parent]);
+        if (heap->elements[current]->f_cost < heap->elements[parent]->f_cost) {            //this block will sort the min-heap in such a way so that 
+            swapNodes(&heap->elements[current], &heap->elements[parent]);                  //the minimum f-cost node stays at index 0 and the heap remains sorted
             current = parent; 
         } else {
             break;
@@ -62,7 +62,7 @@ AStarNode* popHeap(MinHeap* heap) {
 
     int current = 0;
     while (true) {
-        int left = 2 * current + 1;
+        int left = 2 * current + 1;                                  //this block will pop the lowest f-cost node and sort the min-heap
         int right = 2 * current + 2;          
         int smallest = current;
 
@@ -84,16 +84,16 @@ AStarNode* popHeap(MinHeap* heap) {
     return root;
 }
 
-// cleaning memory after solver finishes
+
 void freeHeap(MinHeap* heap) {
     if (heap != NULL) {
-        free(heap->elements); 
+        free(heap->elements);    // to free up memory
         free(heap);           
     }
 }
 
 float get_h_cost(int x1, int y1, int x2, int y2) {                                                          
-    return (float)(abs(x1 - x2) + abs(y1 - y2));
+    return (float)(abs(x1 - x2) + abs(y1 - y2));                  //to calculate manhattan distance
 }
 
 void applyDelay() {
