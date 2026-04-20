@@ -302,17 +302,17 @@ void* solveDijkstra(void* arg) {
 }
 
 void* solveBFS(void* arg) {
-    isSolving = true;
+    isSolving = true; //for the ui to know
     abortSolver = false; // Reset abort flag
     maze* m = (maze*)arg;
-    int totalCells = m->width * m->height;
-    int* queue = (int*)malloc(totalCells * sizeof(int));
+    int totalCells = m->width * m->height; 
+    int* queue = (int*)malloc(totalCells * sizeof(int)); //memory allocation
     int* parent = (int*)malloc(totalCells * sizeof(int));
     bool* visited = (bool*)calloc(totalCells, sizeof(bool));
 
-    int head = 0, tail = 0;
+    int head = 0, tail = 0; // for the queue hrad and tail
 
-    for (int i = 0; i < totalCells; i++) parent[i] = -1;
+    for (int i = 0; i < totalCells; i++) parent[i] = -1; //set every cell's parent to -1
 
     int startIdx = (m->start.y * m->width) + m->start.x;
     int goalIdx = (m->goal.y * m->width) + m->goal.x;
@@ -320,13 +320,13 @@ void* solveBFS(void* arg) {
     queue[tail++] = startIdx; 
     visited[startIdx] = true;
 
-    int dx[] = {0, 0, -1, 1};
+    int dx[] = {0, 0, -1, 1}; // to check all neighbour cells in a single for loop
     int dy[] = {-1, 1, 0, 0};
 
     while (head < tail) {
         if (abortSolver) break; // Check for abort
 
-        int curr = queue[head++]; 
+        int curr = queue[head++]; //changes the current head
         
         // Visual update for explored cells
         pthread_mutex_lock(&gridMutex);
@@ -336,7 +336,7 @@ void* solveBFS(void* arg) {
         pthread_mutex_unlock(&gridMutex);
         applyDelay();
 
-        if (curr == goalIdx) break;
+        if (curr == goalIdx) break; 
 
         int cx = curr % m->width;
         int cy = curr / m->width;
@@ -346,11 +346,11 @@ void* solveBFS(void* arg) {
             int ny = cy + dy[i];
 
             if (nx >= 0 && nx < m->width && ny >= 0 && ny < m->height) {
-                int nIdx = ny * m->width + nx;
+                int nIdx = ny * m->width + nx;//
 
                 if (m->grid[nIdx] != wallCell && !visited[nIdx]) {
                     visited[nIdx] = true;
-                    parent[nIdx] = curr;
+                    parent[nIdx] = curr;//check neighbours and add them to the queue
                     queue[tail++] = nIdx; 
                 }
             }
