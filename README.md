@@ -18,7 +18,7 @@ A high-performance, real-time maze generation and pathfinding visualizer built i
 - **Dijkstra's Algorithm**: Uniform cost search with optimality
 
 ###  GUI Features
-- **Interactive Setup Screen**: Configure maze dimensions (5-201 cells)
+- **Interactive Setup Screen**: Configure maze dimensions 
 - **Real-Time Visualization**: Watch algorithms in action with color-coded cells
   - Green: Start position
   - Red: Goal position
