@@ -3,8 +3,8 @@
 #include "maze.h"
 
 
-void printMazeConsole(maze* m);
-void drawMazeRaylib(maze* m, int screenWidth, int screenHeight);
+void printMazeConsole(maze* m);// cli
+void drawMazeRaylib(maze* m, int screenWidth, int screenHeight);// for gui 
 
 
 
