@@ -27,7 +27,7 @@ typedef struct
     int width;
     cell goal;
     cell start;
-    cellType *grid;
+    cellType *grid; //pointer to a 1D array of cell storing the maze
 } maze;
 //Maze Object
 
@@ -52,8 +52,8 @@ typedef struct {
 } Position;
 
 // Globals for multi-threading and visualization
-extern pthread_mutex_t gridMutex;
-extern int solverDelayMS;
+extern pthread_mutex_t gridMutex; //for locking memory to avoid crash
+extern int solverDelayMS; 
 extern bool isSolving;
 extern bool abortSolver;
 
@@ -62,5 +62,5 @@ void freeMaze(maze* maze);
 cell* getCell(maze* maze,int x,int y);
 cellType getType(cell* cell);
 void setCell(maze* maze,cell* cell,cellType);
-void resetMazePaths(maze* m);
+void resetMazePaths(maze* m);//reset maze for new solver
 #endif
