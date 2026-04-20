@@ -12,7 +12,7 @@ A high-performance, real-time maze generation and pathfinding visualizer built i
 - **Sidewinder**: Horizontal bias generation with efficient carving
 
 ###  Pathfinding Solvers
-- **A* Search**: Heuristic-based optimal pathfinding
+- **A***: Heuristic-based optimal pathfinding
 - **Breadth-First Search (BFS)**: Guaranteed shortest path
 - **Depth-First Search (DFS)**: Memory-efficient exploration
 - **Dijkstra's Algorithm**: Uniform cost search with optimality
