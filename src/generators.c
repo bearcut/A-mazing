@@ -102,7 +102,7 @@ void generateMazeDFS(maze* m) {
 void generateMazeBinaryTree(maze* m) {
     srand(time(NULL));
 
-    // Fill with walls
+    // initialize maze with wall cells
     for (int i = 0; i < m->width * m->height; i++) {
         m->grid[i] = wallCell; 
     }
