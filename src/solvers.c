@@ -30,12 +30,12 @@ MinHeap* createHeap(int capacity) {
 
 
 void swapNodes(AStarNode** a, AStarNode** b) {
-    AStarNode* temp = *a;                                  //pointer swappping function
+    AStarNode* temp = *a;                                  //this func swaps the ptrs
     *a = *b;
     *b = temp;
 }
 
-// Function to push a node into the heap
+// func to push node into heap
 void pushHeap(MinHeap* heap, AStarNode* node) {
     int current = heap->size;
     heap->elements[current] = node;                  // this block will put the node to the last of our min-heap
